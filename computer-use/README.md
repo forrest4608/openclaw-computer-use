@@ -163,7 +163,6 @@ On Retina displays, `screencapture` captures at 2x physical resolution (e.g., 28
 ```text
 computer-use/
 ├── SKILL.md              # Skill definition (injected into Agent's system prompt)
-├── manifest.json         # Skill metadata (standard OpenClaw format)
 ├── _meta.json            # Skill registration metadata
 ├── README.md             # This file
 ├── scripts/
@@ -176,6 +175,122 @@ computer-use/
 └── docs/                 # Documentation and test reports
 ```
 
+---
+
+## 📝 OpenClaw 自定义 Skill 注册指南
+
+> 以下内容基于 `computer-use` skill 的实际排错经验整理，适用于 OpenClaw 2026.2.15+。
+
+### Skill 最小文件结构
+
+一个 OpenClaw Skill **只需要两个文件**：
+
+```text
+your-skill/
+├── SKILL.md       # 必须 — Skill 定义（注入 Agent 系统 prompt）
+└── _meta.json     # 必须 — 元数据（OpenClaw 识别 Skill）
+```
+
+> **`manifest.json` 不需要。** 经验证，`baidu-search`、`feishu-deep-research` 等正常工作的 Skill 都没有此文件。
+
+### SKILL.md 格式
+
+```markdown
+---
+name: your-skill-name
+description: 一句话描述，Agent 据此决定何时使用此 Skill。
+metadata: { "openclaw": { "emoji": "🔧", "requires": { "bins": ["python3"], "model_features": ["vision"] } } }
+---
+
+# Your Skill Name
+
+详细说明 Skill 的功能、使用方法、命令格式...
+```
+
+**关键字段：**
+
+| 字段 | 必须 | 说明 |
+|------|------|------|
+| `name` | ✅ | 唯一标识，必须与目录名一致 |
+| `description` | ✅ | Agent 判断何时使用此 Skill 的依据 |
+| `metadata.openclaw.emoji` | 推荐 | `openclaw skills list` 中显示的图标 |
+| `metadata.openclaw.requires.bins` | 可选 | 系统依赖（如 `cliclick`） |
+| `metadata.openclaw.requires.model_features` | 可选 | 模型能力需求（如 `vision`） |
+
+**⚠️ 命令路径使用相对路径**，基于 `~/.openclaw/workspace/`，例如：`bash skills/your-skill/scripts/run.sh`
+
+### _meta.json 格式
+
+```json
+{
+  "ownerId": "local",
+  "slug": "your-skill-name",
+  "version": "1.0.0",
+  "publishedAt": 1771344000000
+}
+```
+
+### 注册步骤
+
+```bash
+# 1. 放置文件（二选一）
+cp -r your-skill ~/.openclaw/workspace/skills/          # 直接复制
+ln -s /path/to/your-skill ~/.openclaw/workspace/skills/  # 符号链接（开发推荐）
+
+# 2. 编辑 ~/.openclaw/openclaw.json，在 skills.entries 中添加：
+#    "your-skill": {}
+
+# 3. 清除系统 prompt 缓存（⚠️ 关键！最容易遗漏的一步）
+rm -f ~/.openclaw/agents/main/sessions/sessions.json
+rm -f ~/.openclaw/agents/main/sessions/*.jsonl
+
+# 4. 重启 Gateway
+kill -9 $(lsof -ti :18789) 2>/dev/null; sleep 2; openclaw gateway
+
+# 5. 验证
+openclaw skills list
+# 应看到：✓ ready │ 🔧 your-skill │ ...
+```
+
+### 排错清单
+
+当 Skill 不工作时，按以下顺序排查：
+
+| Level | 症状 | 检查项 |
+|-------|------|--------|
+| 1 | `openclaw skills list` 看不到 | SKILL.md 的 frontmatter 格式是否正确？`_meta.json` 是否存在？ |
+| 2 | Agent 说"我无法做到" | `openclaw.json` 的 `skills.entries` 是否已添加？**`sessions.json` 缓存是否已清除？** |
+| 3 | 脚本执行失败 | 是否有执行权限？命令路径是否正确？（相对于 workspace） |
+| 4 | 图片读取失败 | 文件是否在 workspace 目录下？（`/tmp/` 被 OpenClaw 拦截！） |
+| 5 | 坐标偏移 | Retina 2x：截图需缩放到逻辑分辨率才能匹配 `cliclick` 坐标 |
+| 6 | 400 reasoning 错误 | 删除 `~/.openclaw/agents/main/sessions/*.jsonl` |
+
+### OpenClaw 内部机制
+
+```
+openclaw.json (skills.entries)
+    ↓
+扫描 ~/.openclaw/workspace/skills/*/SKILL.md
+    ↓
+读取 frontmatter + 内容 → 注入 Agent 系统 prompt
+    ↓
+缓存到 sessions.json（后续请求直接使用缓存！）
+```
+
+**关键路径：**
+
+| 路径 | 用途 |
+|------|------|
+| `~/.openclaw/openclaw.json` | 全局配置（Skill 注册、模型、Channel） |
+| `~/.openclaw/workspace/skills/` | Skill 文件目录 |
+| `~/.openclaw/agents/main/sessions/sessions.json` | **系统 prompt 缓存**（⚠️ 关键） |
+| `/tmp/openclaw/openclaw-YYYY-MM-DD.log` | 运行日志 |
+
+> **Skill 不需要定义新的 "tool"**。Agent 已内置 `exec`、`image`、`read`、`write` 等工具。你的 SKILL.md 只需告诉 Agent 如何通过 `exec` 调用你的脚本即可。
+
+---
+
 ## 📄 License
 
 MIT
+
