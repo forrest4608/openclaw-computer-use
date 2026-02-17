@@ -31,8 +31,8 @@ if [ -n "$X" ] && [ -n "$Y" ]; then
     fi
 fi
 
-# Add random pre-click delay (human reaction time: 50-200ms)
-cliclick "w:$(jot -r 1 50 200)"
+# Add small pre-click delay (20-80ms)
+cliclick "w:$(jot -r 1 20 80)"
 
 case "$ACTION" in
     click)

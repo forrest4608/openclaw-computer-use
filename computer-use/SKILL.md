@@ -1,6 +1,7 @@
 ---
 name: computer-use
-description: Vision-based non-invasive macOS desktop automation. See screen → Think → Act.
+description: Vision-based non-invasive macOS desktop automation. See screen → Think → Act. Use this skill when the user asks you to operate any application on their computer.
+metadata: { "openclaw": { "emoji": "🖱️", "requires": { "bins": ["cliclick", "python3"], "model_features": ["vision"] } } }
 ---
 
 # 🖱️ Computer Use - macOS Desktop Automation
@@ -18,83 +19,93 @@ A vision-based, non-invasive automation skill that lets the AI **see your screen
 ### 1. 📸 Screenshot (Capture Screen)
 ```bash
 # Full screen
-bash {baseDir}/scripts/screenshot.sh
+bash skills/computer-use/scripts/screenshot.sh
 
 # Specific region (x,y,w,h)
-bash {baseDir}/scripts/screenshot.sh "100,200,800,600"
+bash skills/computer-use/scripts/screenshot.sh "100,200,800,600"
 ```
-Returns the file path to the captured screenshot. Use `view_file` to analyze it.
+Returns the file path to the captured JPEG screenshot (auto-compressed). Use the `image` tool to view and analyze it.
 
 ### 2. 🖱️ Mouse Click
 ```bash
 # Left click at coordinates
-bash {baseDir}/scripts/click.sh click <x> <y>
+bash skills/computer-use/scripts/click.sh click <x> <y>
 
 # Right click
-bash {baseDir}/scripts/click.sh right-click <x> <y>
+bash skills/computer-use/scripts/click.sh right-click <x> <y>
 
 # Double click  
-bash {baseDir}/scripts/click.sh double-click <x> <y>
+bash skills/computer-use/scripts/click.sh double-click <x> <y>
 
 # Drag from (x1,y1) to (x2,y2)
-bash {baseDir}/scripts/click.sh drag <x1> <y1> <x2> <y2>
+bash skills/computer-use/scripts/click.sh drag <x1> <y1> <x2> <y2>
 
 # Move mouse (no click)
-bash {baseDir}/scripts/click.sh move <x> <y>
+bash skills/computer-use/scripts/click.sh move <x> <y>
 ```
 
 ### 3. ⌨️ Keyboard Input
 ```bash
 # Type text
-bash {baseDir}/scripts/type-text.sh type "Hello World"
+bash skills/computer-use/scripts/type-text.sh type "Hello World"
 
 # Press a key
-bash {baseDir}/scripts/type-text.sh key return
-bash {baseDir}/scripts/type-text.sh key tab
-bash {baseDir}/scripts/type-text.sh key esc
+bash skills/computer-use/scripts/type-text.sh key return
+bash skills/computer-use/scripts/type-text.sh key tab
+bash skills/computer-use/scripts/type-text.sh key esc
 
 # Keyboard shortcuts
-bash {baseDir}/scripts/type-text.sh shortcut "cmd+c"
-bash {baseDir}/scripts/type-text.sh shortcut "cmd+v"
-bash {baseDir}/scripts/type-text.sh shortcut "cmd+shift+s"
-bash {baseDir}/scripts/type-text.sh shortcut "cmd+space"
+bash skills/computer-use/scripts/type-text.sh shortcut "cmd+c"
+bash skills/computer-use/scripts/type-text.sh shortcut "cmd+v"
+bash skills/computer-use/scripts/type-text.sh shortcut "cmd+shift+s"
+bash skills/computer-use/scripts/type-text.sh shortcut "cmd+space"
 ```
 
 ### 4. 🪟 Window Control
 ```bash
 # Focus / bring app to front
-bash {baseDir}/scripts/window-control.sh focus "Safari"
+bash skills/computer-use/scripts/window-control.sh focus "Safari"
 
 # List all windows of an app
-bash {baseDir}/scripts/window-control.sh list "Finder"
+bash skills/computer-use/scripts/window-control.sh list "Finder"
 
 # Resize window
-bash {baseDir}/scripts/window-control.sh resize "Safari" 1200 800
+bash skills/computer-use/scripts/window-control.sh resize "Safari" 1200 800
 
 # Move window position
-bash {baseDir}/scripts/window-control.sh position "Safari" 100 100
+bash skills/computer-use/scripts/window-control.sh position "Safari" 100 100
 
 # Minimize window
-bash {baseDir}/scripts/window-control.sh minimize "Safari"
+bash skills/computer-use/scripts/window-control.sh minimize "Safari"
 ```
 
 ### 5. ℹ️ Screen Info
 ```bash
 # Get display resolution, mouse pos, active app
-bash {baseDir}/scripts/get-screen-info.sh
+bash skills/computer-use/scripts/get-screen-info.sh
 ```
 
 ## Automation Flow (How to Use)
 
 When the user asks you to operate an application:
 
-1. **Get screen info** → Run `get-screen-info.sh` to know resolution and active app
-2. **Focus the target app** → Run `window-control.sh focus "AppName"`  
-3. **Take a screenshot** → Run `screenshot.sh` and then `view_file` the result
-4. **Analyze visually** → Identify UI elements and their approximate coordinates
-5. **Perform action** → Click buttons, type text, use shortcuts
-6. **Verify** → Take another screenshot to confirm the action succeeded
-7. **Repeat** as needed
+1. **Focus the target app FIRST** → Always use `window-control.sh focus "AppName"` to bring the app to front. This works even if the app is running in the background. **DO NOT use Spotlight (Cmd+Space) to open apps.** Use `focus` instead.
+2. **Take a screenshot** → Run `screenshot.sh` and read the image to understand the current UI state
+3. **Analyze visually** → Identify UI elements and their approximate coordinates
+4. **Perform action** → Click buttons, type text, use shortcuts
+5. **Verify** → Take another screenshot to confirm the action succeeded
+6. **Repeat** as needed
+
+## Common App Names on macOS
+
+When using `window-control.sh focus`, use the exact macOS app name:
+- 企业微信 → `"企业微信"` (WeCom / Enterprise WeChat)
+- 微信 → `"微信"` (WeChat)
+- 飞书 → `"Lark"` or `"飞书"`
+- Safari → `"Safari"`
+- Chrome → `"Google Chrome"`
+- VS Code → `"Code"`
+- Finder → `"Finder"`
 
 ## Prerequisites
 
@@ -104,9 +115,22 @@ When the user asks you to operate an application:
   - Go to: **System Settings → Privacy & Security → Accessibility**
   - Enable the checkbox for your **Terminal** (or IDE terminal like VS Code)
 
-## Important Notes
+## Important Notes (MUST READ)
 
-- Coordinates are absolute screen pixels (origin at top-left)
+- **COORDINATE MAPPING**: Screenshots are auto-resized to the logical screen resolution (1440x900). The coordinates you see in the image are EXACTLY the coordinates to pass to `click.sh`. **DO NOT multiply or scale coordinates.** Use them directly as-is.
+- **Always use `focus` to activate apps, never Spotlight**
 - Always take a screenshot first to understand the current UI state
 - After each action, re-screenshot to verify the result
-- Use `get-screen-info.sh` to get the display resolution for coordinate calibration
+
+## Pro Tips (Reliability)
+
+- **Prefer keyboard shortcuts over clicking** for common actions. Shortcuts are far more reliable than trying to visually locate small UI elements:
+  - Search: `Cmd+F` (most apps)
+  - New window/document: `Cmd+N`
+  - Copy/Paste: `Cmd+C` / `Cmd+V`
+  - Close: `Cmd+W`
+  - Save: `Cmd+S`
+  - Select All: `Cmd+A`
+- **企业微信 (WeCom) tips**:
+  - Use `Cmd+F` to open the global search bar
+  - After searching, press `Return` to confirm, then click the result

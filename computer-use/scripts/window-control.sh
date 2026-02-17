@@ -20,6 +20,7 @@ fi
 case "$ACTION" in
     focus)
         osascript -e "tell application \"${APP_NAME}\" to activate"
+        sleep 0.5
         echo "✅ Focused: ${APP_NAME}"
         ;;
     list)

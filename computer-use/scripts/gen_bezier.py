@@ -61,8 +61,8 @@ def main():
     distance = math.sqrt((ex - sx)**2 + (ey - sy)**2)
     
     # Adjust steps based on distance (more steps for longer moves)
-    # Minimum 5 steps, max 50. E.g., 1 step per 15-30 pixels
-    steps = max(5, min(50, int(distance / 20)))
+    # Minimum 5 steps, max 20 for faster movement
+    steps = max(5, min(20, int(distance / 40)))
     
     # If very close, just jump
     if distance < 10:
@@ -78,7 +78,7 @@ def main():
         # Random wait between defined points simulates human speed variation
         # Faster in middle (less wait), slower at ends?
         # For simplicity, just small random wait
-        cmds.append(f"w:{random.randint(1, 5)}") 
+        cmds.append(f"w:{random.randint(1, 3)}") 
         
     # Print as space-separated string for cliclick
     print(" ".join(cmds))
