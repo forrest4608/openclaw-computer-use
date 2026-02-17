@@ -10,9 +10,20 @@ An OpenClaw skill that enables AI Agents to interact with your macOS desktop vis
 
 *   **📸 Screen Analysis**: Captures screenshots for the AI to understand the current state.
 *   **🖱️ Mouse Control**: Clicks, double-clicks, right-clicks, and drags via `cliclick`.
-*   **⌨️ Keyboard Input**: Types text and executes shortcuts (e.g., `Cmd+C`, `Cmd+V`).
-*   **🪟 Window Management**: Focuses apps, lists windows, and manages positions via AppleScript.
-*   **🔍 System Info**: Retrieves screen resolution and active window details.
+*   **⌨️ Keyboard Input**: Smart typing with clipboard support (for Chinese) and shortcuts.
+*   **🪟 Window Management**: Focuses apps, lists windows, and manages positions.
+
+---
+
+## 💡 Design Philosophy
+
+**"Visual is the new API."**
+
+The core mission of this skill is **100% Non-invasive Control**:
+
+1.  **🛡️ Anti-Detection**: By strictly using visual feedback (screenshots) and hardware-level input simulation, we bypass sophisticated anti-fraud and anti-bot systems that monitor DOM injection or API hooks.
+2.  **🌐 Universal Compatibility**: Whether it's a native macOS app, a complex web SPAs, or a remote desktop session, if a human can see and click it, this skill can control it.
+3.  **🔒 Zero Intrusion**: No code injection, no reverse engineering of private protocols. We interact with the software exactly as the developer intended—through the UI.
 
 ---
 
