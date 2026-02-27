@@ -3,6 +3,7 @@
 # Usage: ./screenshot.sh [region]
 # region format: x,y,w,h (optional, captures full screen if omitted)
 
+PATH="/usr/sbin:$PATH"
 OUTPUT_DIR="/Users/zhigangliu/.openclaw/workspace/computer-use-screenshots"
 mkdir -p "$OUTPUT_DIR"
 
